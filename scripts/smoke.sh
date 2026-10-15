@@ -47,7 +47,25 @@ say "The error ratio shows up in Prometheus"
 wait_for "error ratio above 10%" \
   bash -c "curl -fsS --data-urlencode 'query=job:http_errors:ratio_rate5m{job=\"demo-app\"}' $PROM/api/v1/query | jq -e '.data.result[0].value[1] | tonumber > 0.1'"
 
+say "The alert fires in Prometheus and reaches Alertmanager"
+# Keep sending traffic, or the 5 minute rate goes flat and the alert clears.
+( while true; do curl -s -o /dev/null "$APP/work"; sleep 0.1; done ) &
+TRAFFIC=$!
+trap 'kill $TRAFFIC 2>/dev/null || true' EXIT
+fired=""
+for _ in $(seq 1 150); do
+  if curl -fsS "$PROM/api/v1/alerts" | jq -e '[.data.alerts[] | select(.labels.alertname=="HighErrorRatio" and .state=="firing")] | length > 0' >/dev/null; then
+    fired=yes; break
+  fi
+  sleep 2
+done
+[ -n "$fired" ] || { echo "FAILED: HighErrorRatio never fired in Prometheus" >&2; exit 1; }
+echo "ok: HighErrorRatio is firing in Prometheus"
+wait_for "alert delivered to Alertmanager" \
+  bash -c "curl -fsS $AM/api/v2/alerts | jq -e '[.[] | select(.labels.alertname==\"HighErrorRatio\")] | length > 0'"
+
 say "Put it back"
+kill $TRAFFIC 2>/dev/null || true
 curl -fsS -X POST "$APP/config?error_rate=0" >/dev/null
 echo
 echo "Smoke test passed"
