@@ -1,0 +1,87 @@
+rule_files:
+  - ../rules/recording.yml
+  - ../rules/alerts.yml
+
+evaluation_interval: 1m
+
+tests:
+  # 1. A target that stops answering pages after one minute.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="demo-app", instance="demo-app:8000"}'
+        values: "1 1 1 0 0 0 0 0"
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: InstanceDown
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: InstanceDown
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: demo-app
+              instance: "demo-app:8000"
+            exp_annotations:
+              summary: "demo-app on demo-app:8000 is down"
+              runbook: "Check the container is running and that /metrics answers."
+
+  # 2. A quarter of requests fail for a long time: both error alerts fire.
+  - interval: 1m
+    input_series:
+      - series: 'http_requests_total{job="demo-app", method="GET", path="/work", status="200"}'
+        values: "0+60x90"
+      - series: 'http_requests_total{job="demo-app", method="GET", path="/work", status="500"}'
+        values: "0+20x90"
+    alert_rule_test:
+      - eval_time: 80m
+        alertname: HighErrorRatio
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: demo-app
+            exp_annotations:
+              summary: "demo-app error ratio is above 5%"
+              runbook: "Check the logs for the failing path and compare with the last deploy."
+      - eval_time: 80m
+        alertname: ErrorBudgetBurnFast
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              job: demo-app
+            exp_annotations:
+              summary: "demo-app is burning its error budget fast"
+              runbook: "Look at recent deploys first. Roll back if the errors started with one."
+
+  # 3. A healthy service stays quiet.
+  - interval: 1m
+    input_series:
+      - series: 'http_requests_total{job="demo-app", method="GET", path="/work", status="200"}'
+        values: "0+60x90"
+      - series: 'http_requests_total{job="demo-app", method="GET", path="/work", status="500"}'
+        values: "0+0x90"
+    alert_rule_test:
+      - eval_time: 80m
+        alertname: HighErrorRatio
+        exp_alerts: []
+      - eval_time: 80m
+        alertname: ErrorBudgetBurnFast
+        exp_alerts: []
+
+  # 4. A disk that loses 1 GB every 10 minutes is caught hours before it is full.
+  - interval: 10m
+    input_series:
+      - series: 'node_filesystem_avail_bytes{job="node", instance="node-exporter:9100", mountpoint="/", fstype="ext4"}'
+        values: "10000000000-1000000000x30"
+    alert_rule_test:
+      - eval_time: 120m
+        alertname: DiskWillFillIn4Hours
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: node
+              instance: "node-exporter:9100"
+              mountpoint: "/"
+              fstype: ext4
+            exp_annotations:
+              summary: "/ on node-exporter:9100 will fill up within 4 hours"
+              runbook: "Find what is growing (logs, images, caches) and clean up or expand the disk."

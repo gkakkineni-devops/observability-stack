@@ -1,0 +1,61 @@
+# Every alert here has a severity, a summary a person can act on, and a runbook line.
+# Rule tests live in ../tests/alerts_test.yml and run with: promtool test rules
+groups:
+  - name: availability
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} on {{ $labels.instance }} is down"
+          runbook: "Check the container is running and that /metrics answers."
+
+  - name: service-health
+    rules:
+      # A 99.9% target leaves a 0.1% error budget. Burning it 14.4x too fast empties
+      # a 30 day budget in about two days. Both windows must agree, so a short blip
+      # does not page anyone.
+      - alert: ErrorBudgetBurnFast
+        expr: |
+          job:http_errors:ratio_rate5m > (14.4 * 0.001)
+          and
+          job:http_errors:ratio_rate1h > (14.4 * 0.001)
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} is burning its error budget fast"
+          runbook: "Look at recent deploys first. Roll back if the errors started with one."
+
+      - alert: HighErrorRatio
+        expr: job:http_errors:ratio_rate5m > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.job }} error ratio is above 5%"
+          runbook: "Check the logs for the failing path and compare with the last deploy."
+
+      - alert: HighLatencyP95
+        expr: job:http_request_duration_seconds:p95_5m > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.job }} p95 latency is above 500 ms"
+          runbook: "Check saturation: CPU, connections, and any slow dependency."
+
+  - name: capacity
+    rules:
+      # Predictive: this fires hours before the disk is full, not when it already is.
+      - alert: DiskWillFillIn4Hours
+        expr: |
+          predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}[1h], 4 * 3600) < 0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.mountpoint }} on {{ $labels.instance }} will fill up within 4 hours"
+          runbook: "Find what is growing (logs, images, caches) and clean up or expand the disk."
