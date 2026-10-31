@@ -6,7 +6,7 @@ services:
     ports: ["127.0.0.1:8000:8000"]
 
   prometheus:
-    image: prom/prometheus:v2.55.1
+    image: prom/prometheus:v3.13.5
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=2d

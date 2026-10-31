@@ -8,7 +8,7 @@ down:      ## stop and remove everything
 
 test:      ## unit-test the alert rules (needs the prom/prometheus image)
 	docker run --rm -v "$$PWD/prometheus:/etc/prometheus:ro" --entrypoint promtool \
-	  prom/prometheus:v2.55.1 test rules /etc/prometheus/tests/alerts_test.yml
+	  prom/prometheus:v3.13.5 test rules /etc/prometheus/tests/alerts_test.yml
 
 smoke:     ## check the running stack end to end
 	./scripts/smoke.sh
