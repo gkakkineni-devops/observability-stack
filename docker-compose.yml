@@ -17,7 +17,7 @@ services:
     depends_on: [alertmanager, demo-app, node-exporter]
 
   alertmanager:
-    image: prom/alertmanager:v0.27.0
+    image: prom/alertmanager:v0.34.2
     command: [--config.file=/etc/alertmanager/alertmanager.yml]
     volumes:
       - ./alertmanager:/etc/alertmanager:ro
