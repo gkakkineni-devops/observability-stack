@@ -24,7 +24,7 @@ services:
     ports: ["127.0.0.1:9093:9093"]
 
   node-exporter:
-    image: prom/node-exporter:v1.8.2
+    image: prom/node-exporter:v1.12.1
     ports: ["127.0.0.1:9100:9100"]
 
   grafana:
