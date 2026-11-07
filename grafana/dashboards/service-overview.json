@@ -24,7 +24,7 @@
       "gridPos": {
         "x": 0,
         "y": 0,
-        "w": 6,
+        "w": 4,
         "h": 5
       },
       "targets": [
@@ -60,6 +60,57 @@
       "options": {}
     },
     {
+      "id": 7,
+      "type": "stat",
+      "title": "Alerts firing",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "count(ALERTS{alertstate=\"firing\"}) or vector(0)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      }
+    },
+    {
       "id": 2,
       "type": "timeseries",
       "title": "Requests per second",
@@ -68,9 +119,9 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 6,
+        "x": 8,
         "y": 0,
-        "w": 9,
+        "w": 8,
         "h": 5
       },
       "targets": [
@@ -101,9 +152,9 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "x": 15,
+        "x": 16,
         "y": 0,
-        "w": 9,
+        "w": 8,
         "h": 5
       },
       "targets": [

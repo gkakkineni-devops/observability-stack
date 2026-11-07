@@ -13,7 +13,7 @@ This is a learning project. It is not code from my job, and the demo service onl
 | Recording rules | Request rate, error ratio (5m and 1h) and p95 latency, worked out once so dashboards and alerts share the same numbers. |
 | Alert rules | Instance down, fast error-budget burn, high error ratio, high p95 latency, and a disk that will fill in 4 hours. |
 | Alertmanager | Groups alerts, sends them to a webhook, and mutes warnings when a critical alert is already firing for the same job. |
-| Grafana | A "Service overview" dashboard, provisioned from files so nothing is set up by hand. |
+| Grafana | A "Service overview" dashboard (targets up, alerts firing, request rate, errors, latency, disk), provisioned from files so nothing is set up by hand. |
 
 ## Run it
 
