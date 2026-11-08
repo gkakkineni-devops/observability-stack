@@ -85,3 +85,26 @@ tests:
             exp_annotations:
               summary: "/ on node-exporter:9100 will fill up within 4 hours"
               runbook: "Find what is growing (logs, images, caches) and clean up or expand the disk."
+
+  # 5. Memory above 90% for longer than 10 minutes fires; a healthy host does not.
+  - interval: 1m
+    input_series:
+      - series: 'node_memory_MemTotal_bytes{job="node", instance="node-exporter:9100"}'
+        values: "1000000000x30"
+      - series: 'node_memory_MemAvailable_bytes{job="node", instance="node-exporter:9100"}'
+        values: "50000000x30"
+      - series: 'node_memory_MemTotal_bytes{job="node", instance="healthy:9100"}'
+        values: "1000000000x30"
+      - series: 'node_memory_MemAvailable_bytes{job="node", instance="healthy:9100"}'
+        values: "600000000x30"
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: HighMemoryUsage
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              instance: "node-exporter:9100"
+              job: node
+            exp_annotations:
+              summary: "node-exporter:9100 is using more than 90% of its memory"
+              runbook: "Find the biggest process or container and check for a leak or a low limit."

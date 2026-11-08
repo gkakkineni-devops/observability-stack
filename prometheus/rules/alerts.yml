@@ -59,3 +59,15 @@ groups:
         annotations:
           summary: "{{ $labels.mountpoint }} on {{ $labels.instance }} will fill up within 4 hours"
           runbook: "Find what is growing (logs, images, caches) and clean up or expand the disk."
+
+      # Used memory as a share of total, with cache counted as free. Sitting above 90%
+      # for 10 minutes usually means a leak or a limit that is set too low.
+      - alert: HighMemoryUsage
+        expr: |
+          1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.instance }} is using more than 90% of its memory"
+          runbook: "Find the biggest process or container and check for a leak or a low limit."
