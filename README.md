@@ -1,5 +1,7 @@
 # observability-stack
 
+[![ci](https://github.com/gkakkineni-devops/observability-stack/actions/workflows/ci.yml/badge.svg)](https://github.com/gkakkineni-devops/observability-stack/actions/workflows/ci.yml)
+
 A small monitoring setup I built to practice alerting the way I'd want it done on a real team. It runs on Docker Compose with one command, and CI checks every piece of it on each push.
 
 This is a learning project. It is not code from my job, and the demo service only exists to give Prometheus something to watch.
