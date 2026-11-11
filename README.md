@@ -17,6 +17,19 @@ This is a learning project. It is not code from my job, and the demo service onl
 | Alertmanager | Groups alerts, sends them to a webhook, and mutes warnings when a critical alert is already firing for the same job. |
 | Grafana | A "Service overview" dashboard (targets up, alerts firing, request rate, errors, latency, disk), provisioned from files so nothing is set up by hand. |
 
+## How it fits together
+
+```mermaid
+flowchart LR
+    app[demo-app] -->|metrics| prom[Prometheus]
+    node[node-exporter] -->|metrics| prom
+    prom -->|rules and alerts| am[Alertmanager]
+    am -->|webhook| app
+    prom -->|queries| graf[Grafana]
+```
+
+Prometheus pulls metrics from the app and node-exporter, runs the recording and alert rules, and hands firing alerts to Alertmanager. Alertmanager posts them to a webhook on the demo app, which just logs them. Grafana reads everything straight from Prometheus.
+
 ## Run it
 
 You need Docker with Compose.
