@@ -78,6 +78,12 @@ CI (`.github/workflows/ci.yml`) does this on every push:
 - The webhook receiver just prints alerts. In a real setup it would be Slack, PagerDuty or similar.
 - Thresholds are tuned for the demo app, not for any real traffic.
 
+## What I'd do next
+
+- Swap the webhook for a real receiver (Slack or similar) and keep its token out of the repo.
+- Move Grafana off 11.3.0 once I've read the 12 upgrade notes and checked the dashboard still provisions.
+- Give Prometheus a volume so data survives `make down`, and say in the README what that costs.
+
 ## License
 
 MIT
