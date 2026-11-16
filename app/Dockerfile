@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 RUN pip install --no-cache-dir prometheus-client==0.21.0 \
  && useradd --create-home --uid 10001 app
