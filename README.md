@@ -72,6 +72,14 @@ CI (`.github/workflows/ci.yml`) does this on every push:
 4. Lints the Dockerfile with hadolint and scans the repo with Trivy
 5. Starts the whole stack, then `scripts/smoke.sh` checks that every target is up, the rules are loaded, the dashboard exists, and that raising the error rate really moves the error-ratio metric
 
+## If something doesn't work
+
+- `make up` fails with "port is already allocated": something else on your machine is using 3000, 8000, 9090, 9093 or 9100. Stop it, or change the left-hand port in `docker-compose.yml`. Everything is bound to 127.0.0.1 only.
+- Grafana shows no data right after start: give Prometheus about a minute to scrape. Open http://127.0.0.1:9090/targets and check that every target says UP.
+- The alert never fires: it needs traffic as well as errors. Make some requests to http://127.0.0.1:8000/work while the error rate is raised, and wait a couple of minutes.
+- `make smoke` fails straight away: it expects the stack to be running already, so run `make up` first. If it fails halfway, it still sets the error rate back to 0 on the way out.
+- Want a clean start: `make down` removes the containers, and Prometheus keeps no data between runs (see "What I'd do next"), so the next `make up` starts fresh.
+
 ## Limits
 
 - Single node, no persistent storage, no auth beyond Grafana's default login. Ports are bound to localhost on purpose.
