@@ -4,6 +4,7 @@ Newest first. Dates are when the change landed on main.
 
 ## 2026-11
 
+- Nov 16: The smoke test now always resets the demo app's error rate and stops its traffic loop, even when a check fails.
 - Nov 13: README got a "What I'd do next" section.
 - Nov 11: README got a "How it fits together" diagram.
 - Nov 10: README got a CI status badge.
