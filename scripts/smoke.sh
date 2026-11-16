@@ -8,6 +8,15 @@ GRAFANA=${GRAFANA:-http://127.0.0.1:3000}
 APP=${APP:-http://127.0.0.1:8000}
 AM=${AM:-http://127.0.0.1:9093}
 
+TRAFFIC=""
+# Runs on every exit, so a failed check never leaves the app throwing errors
+# or a traffic loop running in the background.
+cleanup() {
+  [ -n "$TRAFFIC" ] && kill "$TRAFFIC" 2>/dev/null || true
+  curl -fsS -X POST "$APP/config?error_rate=0" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
 say() { printf '\n== %s\n' "$*"; }
 wait_for() { # name, command...
   local name=$1; shift
@@ -51,7 +60,6 @@ say "The alert fires in Prometheus and reaches Alertmanager"
 # Keep sending traffic, or the 5 minute rate goes flat and the alert clears.
 ( while true; do curl -s -o /dev/null "$APP/work"; sleep 0.1; done ) &
 TRAFFIC=$!
-trap 'kill $TRAFFIC 2>/dev/null || true' EXIT
 fired=""
 for _ in $(seq 1 150); do
   if curl -fsS "$PROM/api/v1/alerts" | jq -e '[.data.alerts[] | select(.labels.alertname=="HighErrorRatio" and .state=="firing")] | length > 0' >/dev/null; then
@@ -65,7 +73,6 @@ wait_for "alert delivered to Alertmanager" \
   bash -c "curl -fsS $AM/api/v2/alerts | jq -e '[.[] | select(.labels.alertname==\"HighErrorRatio\")] | length > 0'"
 
 say "Put it back"
-kill $TRAFFIC 2>/dev/null || true
-curl -fsS -X POST "$APP/config?error_rate=0" >/dev/null
+cleanup
 echo
 echo "Smoke test passed"
