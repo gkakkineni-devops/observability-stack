@@ -4,6 +4,8 @@ Newest first. Dates are when the change landed on main.
 
 ## 2026-11
 
+- Nov 19: The smoke test now expects at least 10 loaded rules (6 alerts and 4 recording rules), so a rule that stops loading gets caught.
+
 - Nov 16: README got an "If something doesn't work" section.
 - Nov 16: The smoke test now always resets the demo app's error rate and stops its traffic loop, even when a check fails.
 - Nov 13: README got a "What I'd do next" section.

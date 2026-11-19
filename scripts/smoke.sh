@@ -40,7 +40,7 @@ wait_for "all targets healthy" \
 
 say "Rules are loaded and healthy"
 curl -fsS "$PROM/api/v1/rules" | jq -e '
-  [.data.groups[].rules[]] | length >= 9 and all(.health == "ok")'
+  [.data.groups[].rules[]] | length >= 10 and all(.health == "ok")'
 
 say "Grafana has the provisioned dashboard"
 curl -fsS -u admin:admin "$GRAFANA/api/search?query=Service" | jq -e 'map(.title) | index("Service overview") != null'
