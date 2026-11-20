@@ -45,7 +45,7 @@ curl -fsS "$PROM/api/v1/rules" | jq -e '
 say "Grafana has the provisioned dashboard"
 curl -fsS -u admin:admin "$GRAFANA/api/search?query=Service" | jq -e 'map(.title) | index("Service overview") != null'
 
-say "Healthy traffic gives a low error ratio"
+say "Send some healthy traffic first"
 for _ in $(seq 1 100); do curl -s -o /dev/null "$APP/work"; done
 
 say "Break the service on purpose: 60% errors"

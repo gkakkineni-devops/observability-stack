@@ -4,6 +4,7 @@ Newest first. Dates are when the change landed on main.
 
 ## 2026-11
 
+- Nov 20: Renamed a smoke test step that claimed to check a low error ratio but only sends healthy traffic.
 - Nov 19: The smoke test now expects at least 10 loaded rules (6 alerts and 4 recording rules), so a rule that stops loading gets caught.
 
 - Nov 16: README got an "If something doesn't work" section.
